@@ -3,6 +3,7 @@ package com.example.repaso;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentContainer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -24,13 +25,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MainActivity extends AppCompatActivity implements Register_Fragment.RegisterListener, Login_Fragment.LoginListener {
+public class MainActivity extends AppCompatActivity implements Register_Fragment.RegisterListener, Login_Fragment.LoginListener, AddLibros.addLibroListener, Lista_Fragment.ListaListener {
 
     FirebaseAuth mAuth;
     FirebaseDatabase database;
     DatabaseReference myRef;
     ArrayList<Libro> libros;
+
+    ChildEventListener childEventListener;
 
     Toolbar toolbar;
     @Override
@@ -43,54 +48,67 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
         // Firebase para login
         mAuth = FirebaseAuth.getInstance();
 
+        // Firebase de base de datos
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("libros");
+
+        childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Libro libro = dataSnapshot.getValue(Libro.class);
+                if (libro != null){
+                    libros.add(libro);
+                    Lista_Fragment lista_fragment = (Lista_Fragment) getSupportFragmentManager().findFragmentByTag("Lista");
+                    if (lista_fragment != null){
+                        lista_fragment.addLibro(libro);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+
     }
 
 
 
     public void updateUI(FirebaseUser currentUser){
         if (currentUser != null){
-            // Firebase de base de datos
-            database = FirebaseDatabase.getInstance();
-            myRef = database.getReference("libros");
-
-            libros = new ArrayList<Libro>();
-            myRef.child("lista").addChildEventListener(new ChildEventListener() {
-                @Override
-                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                    Libro libro = dataSnapshot.getValue(Libro.class);
-                    if (libro != null){
-                        libros.add(libro);
-                    }
-
-                }
-
-                @Override
-                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                }
-
-                @Override
-                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-            Fragment fragment = new Lista_Fragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+            displayList();
         } else{
             Fragment fragment = new Register_Fragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
+
+    }
+
+    private void displayList() {
+        libros = new ArrayList<Libro>();
+
+        myRef.child("lista").removeEventListener(childEventListener);
+        Fragment fragment = new Lista_Fragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment, "Lista").commit();
+        myRef.child("lista").addChildEventListener(childEventListener);
+
 
     }
 
@@ -112,8 +130,13 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.toolbar_list:
+                displayList();
                 return true;
             case R.id.toolbar_login:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new Register_Fragment()).commit();
+                return true;
+            case R.id.toolbar_book:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new AddLibros()).commit();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -164,5 +187,10 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
                         // ...
                     }
                 });
+    }
+
+    @Override
+    public void añadirLibro(String titulo, String autor, String categoria) {
+        myRef.child("lista").push().setValue(new Libro(titulo,autor,categoria));
     }
 }
