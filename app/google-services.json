@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1086312299371",
+    "firebase_url": "https://repaso-31d0f.firebaseio.com",
+    "project_id": "repaso-31d0f",
+    "storage_bucket": "repaso-31d0f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086312299371:android:6fbba8e627a7fe4f",
+        "android_client_info": {
+          "package_name": "com.example.repaso"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1086312299371-f549rkrgvdiv6ni3hvncj033a7esqbv4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.repaso",
+            "certificate_hash": "95eb3f145b53be6334c071d1182089d9695511cd"
+          }
+        },
+        {
+          "client_id": "1086312299371-7dsfvocclv2meslmft56nr0gij17e6gt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_-ggwMIJznSFBT17CN_rKItlPWJ1lQf0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1086312299371-7dsfvocclv2meslmft56nr0gij17e6gt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
