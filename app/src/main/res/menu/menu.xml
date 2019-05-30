@@ -17,4 +17,9 @@
         android:icon="@drawable/book_icon"
         app:showAsAction="always"/>
 
+    <item android:id="@+id/toolbar_webView"
+        android:title="login"
+        android:icon="@drawable/webview_icon"
+        app:showAsAction="always"/>
+
 </menu>

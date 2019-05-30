@@ -1,5 +1,6 @@
 package com.example.repaso;
 
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -24,11 +27,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MainActivity extends AppCompatActivity implements Register_Fragment.RegisterListener, Login_Fragment.LoginListener, AddLibros.addLibroListener, Lista_Fragment.ListaListener {
+public class MainActivity extends AppCompatActivity implements Register_Fragment.RegisterListener, Login_Fragment.LoginListener, AddLibros.addLibroListener, Lista_Fragment.ListaListener, webViewFragment.webListener {
 
     FirebaseAuth mAuth;
     FirebaseDatabase database;
@@ -89,8 +100,6 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
 
     }
 
-
-
     public void updateUI(FirebaseUser currentUser){
         if (currentUser != null){
             displayList();
@@ -137,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
                 return true;
             case R.id.toolbar_book:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new AddLibros()).commit();
+                return true;
+            case R.id.toolbar_webView:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,new webViewFragment(), "webView").commit();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -192,5 +204,51 @@ public class MainActivity extends AppCompatActivity implements Register_Fragment
     @Override
     public void añadirLibro(String titulo, String autor, String categoria) {
         myRef.child("lista").push().setValue(new Libro(titulo,autor,categoria));
+    }
+
+    @Override
+    public void openWebView() {
+        MiThread thread = new MiThread();
+        thread.execute("https://bathtubs.com/");
+    }
+
+    // El primer argumento es el que pedirá el doInBackground
+    // El último argumento es el que pedirá el onPostExecute
+    public class MiThread extends AsyncTask<String, Void, String> {
+
+        @Override
+        // doInBackground pide String... porque tiene String en el Asynctask
+        protected String doInBackground(String... strings) {
+            HttpURLConnection connection = null;
+            URL url;
+            String result = "";
+            try {
+                url = new URL(strings[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = connection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String data = bufferedReader.readLine();
+
+                while(data != null){
+                    result += data;
+                    data = bufferedReader.readLine();
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.i("RESULT ",result);
+            return result;
+        }
+        @Override
+
+        protected void onPostExecute(String data){
+            super.onPostExecute(data);
+            webViewFragment webViewFragment = (webViewFragment) getSupportFragmentManager().findFragmentByTag("webView");
+            webViewFragment.loadData(data);
+        }
     }
 }

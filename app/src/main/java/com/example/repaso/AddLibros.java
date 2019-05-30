@@ -1,6 +1,8 @@
 package com.example.repaso;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -41,6 +43,20 @@ public class AddLibros extends Fragment {
             @Override
             public void onClick(View v) {
                 mListener.añadirLibro(add_titulo.getText().toString(),add_autor.getText().toString(),add_categoria.getText().toString());
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage("¡Has añadido un libro!").setTitle("Dialogo").setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).setNegativeButton("Me la pela", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         });
 
